@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Push, and Deploy Docker Image
 
 on:
   push:
@@ -36,7 +36,23 @@ jobs:
           push: true
           tags: shirbenyosef1/my-app-image:latest
 
-      # Optionally, you can add a step to verify the image
-      - name: Verify Docker Image
-        run: docker run --rm shirbenyosef1/my-app-image:latest
+      # Step 5: Install SSH client
+      - name: Install SSH client
+        run: sudo apt-get install -y openssh-client
 
+      # Step 6: Add SSH private key
+      - name: Add SSH private key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
+
+      # Step 7: SSH into EC2 instance and deploy the Docker image
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            # Pull the latest Docker image
+            docker pull shirbenyosef1/my-app-image:latest
+            
+            # Run the new container
+            docker run --rm shirbenyosef1/my-app-image:latest
+          EOF
