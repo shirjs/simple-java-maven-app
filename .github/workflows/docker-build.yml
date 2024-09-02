@@ -28,25 +28,32 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 4: Build and push the Docker image
+      # Step 4: Get the short commit hash
+      - name: Get short commit hash
+        id: vars
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      # Step 5: Build and push the Docker image
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: shirbenyosef1/my-app-image:latest
+          tags: |
+            shirbenyosef1/my-app-image:latest
+            shirbenyosef1/my-app-image:${{ env.COMMIT_HASH }}
 
-      # Step 5: Install SSH client
+      # Step 6: Install SSH client
       - name: Install SSH client
         run: sudo apt-get install -y openssh-client
 
-      # Step 6: Add SSH private key
+      # Step 7: Add SSH private key
       - name: Add SSH private key
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
 
-      # Step 7: SSH into EC2 instance and deploy the Docker image
+      # Step 8: SSH into EC2 instance and deploy the Docker image
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
