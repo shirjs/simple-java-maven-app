@@ -49,7 +49,7 @@ jobs:
       # Step 7: SSH into EC2 instance and deploy the Docker image
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             # Pull the latest Docker image
             docker pull shirbenyosef1/my-app-image:latest
             
