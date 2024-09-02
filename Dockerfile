@@ -6,11 +6,12 @@ COPY pom.xml .
 COPY src ./src
 
 RUN mvn clean package
+RUN JAR_FILE=$(ls target/*.jar) && mv $JAR_FILE /app/app.jar
 
 FROM openjdk:17-jdk-slim
 
 WORKDIR /app
 
-COPY --from=stage1 /app/target/my-app-1.0-SNAPSHOT.jar ./my-app.jar
+COPY --from=stage1 /app/app.jar ./app.jar
 
-ENTRYPOINT ["java", "-jar", "my-app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
