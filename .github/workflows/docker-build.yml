@@ -48,7 +48,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 7: Build and push the Docker image
+      # Step 7: Get Maven project version
+      - name: Get Maven Project Version
+        id: mvn_version
+        run: echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      # Step 8: Build and push the Docker image
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -56,19 +61,19 @@ jobs:
           push: true
           tags: |
             shirbenyosef1/my-app-image:latest
-            shirbenyosef1/my-app-image:$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+            shirbenyosef1/my-app-image:${{ env.VERSION }}
 
-      # Step 8: Install SSH client
+      # Step 9: Install SSH client
       - name: Install SSH client
         run: sudo apt-get install -y openssh-client
 
-      # Step 9: Add SSH private key
+      # Step 10: Add SSH private key
       - name: Add SSH private key
         uses: webfactory/ssh-agent@v0.7.0
         with:
           ssh-private-key: ${{ secrets.EC2_PRIVATE_KEY }}
 
-      # Step 10: SSH into EC2 instance and deploy the Docker image
+      # Step 11: SSH into EC2 instance and deploy the Docker image
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
